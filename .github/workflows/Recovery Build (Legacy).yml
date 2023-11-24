@@ -10,15 +10,15 @@ on:
       MANIFEST_BRANCH:
         description: 'MANIFEST_BRANCH'
         required: true
-        default: 'twrp-6.0'
+        default: 'twrp-8.1'
       DEVICE_TREE_URL:
         description: 'DEVICE_TREE_URL'
         required: true
-        default: 'https://github.com/jcadduono/android_device_samsung_gtanotexllte.git'
+        default: 'https://github.com/Marco-cefetmg/android_device_samsung_gtanotexllte.git'
       DEVICE_TREE_BRANCH:
         description: 'DEVICE_TREE_BRANCH'
         required: true
-        default: 'android-6.0'
+        default: 'android-8.1'
       DEVICE_PATH:
         description: 'DEVICE_PATH'
         required: true
