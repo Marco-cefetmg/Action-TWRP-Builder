@@ -1,0 +1,49 @@
+name: Build Rising
+
+on:
+  workflow_dispatch:
+jobs:
+  building:
+    runs-on: ubuntu-latest
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write
+    steps:
+       - name: Git config
+         run: git config --global user.name "Mark Fomin"; git config --global user.email "androidbuild@difhel.dev"
+
+       - name: Download repository files
+         uses: actions/checkout@v2
+         
+       - name: Installation of repo
+         run: sudo apt install python-is-python3; mkdir -p ~/.bin; PATH="${HOME}/.bin:${PATH}"; curl https://storage.googleapis.com/git-repo-downloads/repo > ~/.bin/repo; chmod a+rx ~/.bin/repo; alias repo="~/.bin/repo"
+         
+       - name: Preparing for repo syncing
+         run: sudo apt install git-lfs; git lfs install; rm -rf external/chromium-webview/prebuilt/*; rm -rf .repo/projects/external/chromium-webview/prebuilt/*.git; rm -rf .repo/project-objects/LineageOS/android_external_chromium-webview_prebuilt_*.git
+       
+       - name: Repo init (if needed)
+         run: if [ -d ".repo" ]; then echo "repo has been initialized"; else echo "Need to init new one"; ~/.bin/repo init --depth=1 --no-repo-verify -u https://github.com/RisingTechOSS/android -b thirteen --git-lfs -g default,-mips,-darwin,-notdefault; fi;
+       
+       - name: Repo sync
+         run: ~/.bin/repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j$(nproc --all)
+         
+       - name: Commit repo (we do not need to sync it every time, right?)
+         uses: stefanzweifel/git-auto-commit-action@v4
+       
+       - name: Inherit Lineage vendor common stuffs
+         run: $(call inherit-product, vendor/lineage/config/common_full_phone.mk)
+         
+       - name: Build environment setup
+         run: . build/envsetup.sh
+       
+       - name: Brunch Oriole (userdebug variant)
+         run: brunch "device_oriole" userdebug
+         
+       - name: Lunch
+         run: lunch lineage_oriole-userdebug
+        
+       - name: Build
+         run: mka bacon -jX
+         
+       
